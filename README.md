@@ -33,8 +33,10 @@
 
 
 ## 세부 기술
+Express.js  
+vue.js
 ## 구현 영상
 ## 성능 테스트
 ## 추후 구현할 기능
-SmartThings 적용
+SmartThings 적용  
 MQTT 허브 적용
