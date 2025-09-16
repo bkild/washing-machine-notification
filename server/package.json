@@ -1,26 +1,23 @@
 {
-  "name": "washing-machine-notification",
-  "version": "1.0.0",
-  "description": "세탁기의 현재 상태를 확인하며, 세탁이 완료되면 여러 디바이스들에게 알림을 보내는 프로젝트입니다.  \r 세탁기를 돌렸는데 다 완료된 상태로 세탁물을 방치하면 악취가 발생합니다. 해당 경험이 불편하여 세탁이 완료되면 근처에 있는 디바이스를 통해 알림을 받을 수 있으면 좋겠다는 생각으로 프로젝트를 계획하였습니다. 완료알림 뿐만 아니라 세탁완료까지 남은 시간도 확인 할 수 있습니다.",
-  "main": "index.js",
+  "name": "server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bkild/washing-machine-notification.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/bkild/washing-machine-notification/issues"
-  },
-  "homepage": "https://github.com/bkild/washing-machine-notification#readme",
   "dependencies": {
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
-    "morgan": "^1.10.1",
-    "sqlite3": "^5.1.7"
+    "vue": "^3.5.18",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.0.6",
+    "vite-plugin-vue-devtools": "^8.0.0"
   }
 }
