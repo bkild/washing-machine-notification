@@ -43,7 +43,7 @@
 
 |ESP32|<-통신기술+데이터양식->|RasberryPi 4|<-통신기술+데이터양식->|ESP32 etc|
 |---|---|---|---|---|
-|Arduino C/C++|TCP+JSON|Node.js<br>Express.js<br>Vue.js<br>SQLite3|TCP+JSON<br>(가능한 장치 통신 프로토콜)+JSON|Arduino C/C++<br>(장치가 지원하는 언어로 개발)|
+|Arduino C/C++|TCP+JSON|Node.js<br>Vue.js<br>SQLite3|TCP+JSON<br>(가능한 장치 통신 프로토콜)+JSON|Arduino C/C++<br>(장치가 지원하는 언어로 개발)|
 
 - 모든 전송 데이터는 JSON 포맷을 사용하며, 전송데이터는 모두 문자열(String) 타입으로  통일한다.
 - ESP32는 Arduino IDE를 활용하여 C/C++ 기반으로 개발한다.
