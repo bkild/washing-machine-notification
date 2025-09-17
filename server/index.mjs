@@ -14,8 +14,9 @@ const esp32TcpSocketServer = net.createServer((socket) => {
 
   //소켓이 작동중일때 메시지를 받은 경우
   socket.on("data", (data) => {
-    console.log("Received from ESP32 TCP socket client : ", data.toString());
+    const JSONobj = JSON.parse(data);
 
+    console.log("Received from ESP32 TCP socket client : ", JSONobj);
     //로그 저장기능
     // const dataObj = JSON.parse(data.toString);
 
@@ -38,5 +39,5 @@ const tcpSocketServer = net.createServer((socket) => {
   });
 });
 
-esp32TcpSocketServer.listen(ESP32_TCP_SOCKET_PORT,()=>console.log(`esp32 server is waiting for client connecting : ${ESP32_TCP_SOCKET_PORT}`));
-tcpSocketServer.listen(TCP_SOCKET_PORT,()=>console.log(`server is waiting for client connecting : ${TCP_SOCKET_PORT}`));
+esp32TcpSocketServer.listen(ESP32_TCP_SOCKET_PORT, () => console.log(`esp32 server is waiting for client connecting : ${ESP32_TCP_SOCKET_PORT}`));
+tcpSocketServer.listen(TCP_SOCKET_PORT, () => console.log(`server is waiting for client connecting : ${TCP_SOCKET_PORT}`));
