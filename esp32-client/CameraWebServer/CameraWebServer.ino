@@ -1,17 +1,23 @@
 #include "esp_camera.h"
 #include <WiFi.h>
-
+#include <ArduinoJson.h>
+#include <base64.hpp>
 // ===========================
 // Select camera model in board_config.h
 // ===========================
 #include "board_config.h"
-
+#define CHUNK_SIZE 128
 // ===========================
 // Enter your WiFi credentials
 // ===========================
+// String ssid = "Hotspot7028";
+// String password = "0622661079";
 String ssid = "SK_WiFiGIGACBDC";
 String password = "1903048634";
-
+const uint16_t port = 10032;
+const char *host = "192.168.35.189";
+WiFiClient client;
+char encoded[CHUNK_SIZE];
 void startCameraServer();
 void setupLedFlash();
 
@@ -122,26 +128,29 @@ void setup() {
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
-  // 사진 촬영
+}
+
+void loop() {
+  WiFiClient client;
+  if (!client.connect(host, port)) {
+    Serial.println("Connection to host failed");
+    delay(1000);
+    return;
+  }
+  // put your main code here, to run repeatedly:
+  // 사진 캡처
   camera_fb_t *fb = esp_camera_fb_get();
   if (!fb) {
     Serial.println("Camera capture failed");
     return;
   }
 
-  Serial.printf("Captured JPEG size: %zu bytes\n", fb->len);
+  // JSON 시작
 
-  // 시리얼 모니터로 JPEG 바이트 출력 (Hex)
-  Serial.println("JPEG Data (hex):");
-  for (size_t i = 0; i < 20; i++) {
-    Serial.printf("%02X", fb->buf[i]);
-  }
-
-  // 버퍼 반환
+  client.printf("{\"command\":\"capture\",\"size\":\"%d\"}", fb->len);
+  client.write(fb->buf, fb->len);
+  // 메모리 반환
   esp_camera_fb_return(fb);
-}
 
-void loop() {
-  // Do nothing. Everything is done in another task by the web server
-  delay(10000);
+  delay(5000);
 }

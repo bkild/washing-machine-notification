@@ -13,17 +13,34 @@ const esp32TcpSocketServer = net.createServer((socket) => {
   esp32Socket = socket;
 
   //소켓이 작동중일때 메시지를 받은 경우
-  socket.on("data", (data) => {
-    const JSONobj = JSON.parse(data);
+  let remain = 0;
 
-    console.log("Received from ESP32 TCP socket client : ", JSONobj);
+  let buffer = [];
+  socket.on("data", (data) => {
+    console.log(remain);
+    if ((remain === 0)) {
+      const JSONobj = JSON.parse(data);
+
+      console.log("Received from ESP32 TCP socket client : ", JSONobj);
+      if (JSONobj.command === "capture") {
+        remain = Number(JSONobj.size);
+      }
+    } else {
+      buffer.push(data);
+      remain -= data.length;
+      if (remain === 0) {
+        console.log(buffer);
+        buffer = [];
+      }
+    }
+
     //로그 저장기능
     // const dataObj = JSON.parse(data.toString);
 
     //브로드 캐스트
-    tcpSocketClients.forEach((tcpSocketClient) => {
-      tcpSocketClient.write(data);
-    });
+    // tcpSocketClients.forEach((tcpSocketClient) => {
+    //   tcpSocketClient.write(data);
+    // });
   });
 });
 const tcpSocketServer = net.createServer((socket) => {
@@ -35,9 +52,14 @@ const tcpSocketServer = net.createServer((socket) => {
   //소켓이 작동중일때 메시지를 받은 경우
   socket.on("data", (data) => {
     console.log("Received from TCP socket client : ", data.toString());
-
   });
 });
 
-esp32TcpSocketServer.listen(ESP32_TCP_SOCKET_PORT, () => console.log(`esp32 server is waiting for client connecting : ${ESP32_TCP_SOCKET_PORT}`));
-tcpSocketServer.listen(TCP_SOCKET_PORT, () => console.log(`server is waiting for client connecting : ${TCP_SOCKET_PORT}`));
+esp32TcpSocketServer.listen(ESP32_TCP_SOCKET_PORT, () =>
+  console.log(
+    `esp32 server is waiting for client connecting : ${ESP32_TCP_SOCKET_PORT}`
+  )
+);
+tcpSocketServer.listen(TCP_SOCKET_PORT, () =>
+  console.log(`server is waiting for client connecting : ${TCP_SOCKET_PORT}`)
+);
