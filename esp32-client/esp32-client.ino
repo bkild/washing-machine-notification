@@ -1,9 +1,11 @@
 #include <ArduinoJson.h>
 #include <WiFi.h>
-String ssid = "Hotspot7028";
-String password = "0622661079";
+// String ssid = "Hotspot7028";
+// String password = "0622661079";
+String ssid = "SK_WiFiGIGACBDC";
+String password = "1903048634";
 const uint16_t port= 10032;
-const char *host = "192.168.73.245";
+const char *host = "192.168.35.189";
 
 WiFiClient client;
 
