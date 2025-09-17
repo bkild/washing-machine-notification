@@ -49,6 +49,7 @@
 
 - 모든 전송 데이터는 JSON 포맷을 사용하며, 전송데이터는 모두 문자열(String) 타입으로  통일한다.
 - ESP32는 Arduino IDE를 활용하여 C/C++ 기반으로 개발한다.
+- ESP32 JSON parsing은 ArduinoJson by Benoit Blanchon 7.4.2을 사용한다
 - 추가 장치가 연결될 경우, 해당 장치에 지원하는 언어 및 IDE를 동일한 방식으로 기술한다.
 
 #### 상세문서
