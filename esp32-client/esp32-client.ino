@@ -3,7 +3,7 @@
 #include "esp_camera.h"
 #include <WiFi.h>
 #include <ArduinoJson.h>
-
+#include "seven_segment_led.h"
 // ===========================
 // Select camera model in board_config.h
 // ===========================
