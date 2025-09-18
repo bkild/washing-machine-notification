@@ -35,7 +35,16 @@ void seven_segment_idx_to_char_init() {
 
 
 }
+#define TARGET_R 255
+#define TARGET_G 197
+#define TARGET_B 179
 
+int seg_pixel_pos[4][8][2]={
+	0,0,327,322,326,329,0,0,0,0,0,0,0,0,0,0,
+	334,318,338,322,336,330,332,333,329,330,331,321,333,326,0,0,
+	349,319,353,323,351,330,347,333,345,330,345,323,348,326,0,0,
+	359,320,363,323,361,331,357,334,354,330,355,323,358,327,0,0
+};
 // _
 //| |
 //|_|
@@ -90,5 +99,12 @@ void print7segment(char c) {
 	printf("%c%c%c\n", (is_on[5] ? '|' : ' '), (is_on[6] ? '_' : ' '), (is_on[1] ? '|' : ' '));
 	printf("%c%c%c %c\n", (is_on[4] ? '|' : ' '), (is_on[3] ? '_' : ' '), (is_on[2] ? '|' : ' '), (is_on[7] ? '.' : ' '));
 }
-
+void print7segment(bool is_on[]) {
+	// 0
+	//561
+	//432 7
+	Serial.printf(" %c \n",(is_on[0] ?'_':' '));
+	Serial.printf("%c%c%c\n", (is_on[5] ? '|' : ' '), (is_on[6] ? '_' : ' '), (is_on[1] ? '|' : ' '));
+	Serial.printf("%c%c%c %c\n", (is_on[4] ? '|' : ' '), (is_on[3] ? '_' : ' '), (is_on[2] ? '|' : ' '), (is_on[7] ? '.' : ' '));
+}
 #endif
