@@ -1,66 +1,178 @@
-#include <ArduinoJson.h>
+#include <TJpg_Decoder.h>
+
+#include "esp_camera.h"
 #include <WiFi.h>
-// String ssid = "Hotspot7028";
-// String password = "0622661079";
-String ssid = "SK_WiFiGIGACBDC";
-String password = "1903048634";
-const uint16_t port= 10032;
+#include <ArduinoJson.h>
+
+// ===========================
+// Select camera model in board_config.h
+// ===========================
+#include "board_config.h"
+#define CHUNK_SIZE 128
+// ===========================
+// Enter your WiFi credentials
+// ===========================
+String ssid = "Hotspot7028";
+String password = "0622661079";
+// String ssid = "SK_WiFiGIGACBDC";
+// String password = "1903048634";
+const uint16_t port = 10032;
 const char *host = "192.168.35.189";
-
 WiFiClient client;
+void startCameraServer();
+void setupLedFlash();
 
-void setup()
-{
-  // put your setup code here, to run once:
-
-  Serial.begin(115200);
-
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-
-    delay(500);
-    Serial.println("...");
+// JPEG 메모리 버퍼에서 디코딩 (전체 변환 아님)
+bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
+  // (x,y)~(x+w,y+h) 블록 단위 픽셀이 bitmap으로 들어옴
+  // 여기서 특정 좌표의 RGB565 값을 추출 가능
+  Serial.printf("%d %d %d %d",x,y,w,h);
+  for (int j = 0; j < 1; j++) {
+    for (int i = 0; i < 1; i++) {
+      uint16_t color = bitmap[j * w + i];
+      uint8_t r = ((color >> 11) & 0x1F) << 3;
+      uint8_t g = ((color >> 5) & 0x3F) << 2;
+      uint8_t b = (color & 0x1F) << 3;
+      Serial.printf("(%d, %d, %d)", r, g, b);
+    }
   }
-  Serial.println("JSON parsing using ArduinoJson library on ESP32");
-}
-
-void loop()
-{
-  WiFiClient client;
-  if (!client.connect(host, port))
-  {
-    Serial.println("Connection to host failed");
-    delay(1000);
-    return;
-  }
-  // put your main code here, to run repeatedly:
-  Serial.println("Parsing start: ");
-  char JSONMsg[] = "{\"SensorType\":\"Temperature\",\"Value\":10}";
-
-  client.print(JSONMsg);
-  JsonDocument doc;
-  DeserializationError error = deserializeJson(doc, JSONMsg);
-  if (error)
-  { // Check for errors in parsing
-
-    Serial.println("Parsing failed!");
-    Serial.print("deserializeJson() returned ");
-    Serial.println(error.c_str());
-    delay(5000);
-
-    return;
-  }
-
-  JsonObject obj = doc.as<JsonObject>();
-
-  const char *sensorType = obj["SensorType"]; // Get sensor type value
-
-  int value = obj["Value"]; // Get value of sensor measurement
-
-  Serial.printf("Sensor type: %s\n", sensorType);
-  Serial.printf("Sensor value: %d\n", value);
   Serial.println();
 
-  delay(5000);
+  return true;  // 계속 디코딩
+}
+void setup() {
+  Serial.begin(115200);
+  Serial.setDebugOutput(true);
+  Serial.println();
+  TJpgDec.setJpgScale(1);
+  TJpgDec.setCallback(tjpg_output);
+  camera_config_t config;
+  config.ledc_channel = LEDC_CHANNEL_0;
+  config.ledc_timer = LEDC_TIMER_0;
+  config.pin_d0 = Y2_GPIO_NUM;
+  config.pin_d1 = Y3_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d4 = Y6_GPIO_NUM;
+  config.pin_d5 = Y7_GPIO_NUM;
+  config.pin_d6 = Y8_GPIO_NUM;
+  config.pin_d7 = Y9_GPIO_NUM;
+  config.pin_xclk = XCLK_GPIO_NUM;
+  config.pin_pclk = PCLK_GPIO_NUM;
+  config.pin_vsync = VSYNC_GPIO_NUM;
+  config.pin_href = HREF_GPIO_NUM;
+  config.pin_sccb_sda = SIOD_GPIO_NUM;
+  config.pin_sccb_scl = SIOC_GPIO_NUM;
+  config.pin_pwdn = PWDN_GPIO_NUM;
+  config.pin_reset = RESET_GPIO_NUM;
+  config.xclk_freq_hz = 20000000;
+  config.frame_size = FRAMESIZE_UXGA;
+  config.pixel_format = PIXFORMAT_JPEG;  // for streaming
+  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+  config.fb_location = CAMERA_FB_IN_PSRAM;
+  config.jpeg_quality = 12;
+  config.fb_count = 1;
+
+  // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
+  //                      for larger pre-allocated frame buffer.
+  if (config.pixel_format == PIXFORMAT_JPEG) {
+    if (psramFound()) {
+      config.jpeg_quality = 10;
+      config.fb_count = 2;
+      config.grab_mode = CAMERA_GRAB_LATEST;
+    } else {
+      // Limit the frame size when PSRAM is not available
+      config.frame_size = FRAMESIZE_SVGA;
+      config.fb_location = CAMERA_FB_IN_DRAM;
+    }
+  } else {
+    // Best option for face detection/recognition
+    config.frame_size = FRAMESIZE_240X240;
+#if CONFIG_IDF_TARGET_ESP32S3
+    config.fb_count = 2;
+#endif
+  }
+
+#if defined(CAMERA_MODEL_ESP_EYE)
+  pinMode(13, INPUT_PULLUP);
+  pinMode(14, INPUT_PULLUP);
+#endif
+
+  // camera init
+  esp_err_t err = esp_camera_init(&config);
+  if (err != ESP_OK) {
+    Serial.printf("Camera init failed with error 0x%x", err);
+    return;
+  }
+
+  sensor_t *s = esp_camera_sensor_get();
+  // initial sensors are flipped vertically and colors are a bit saturated
+  if (s->id.PID == OV3660_PID) {
+    s->set_vflip(s, 1);        // flip it back
+    s->set_brightness(s, 1);   // up the brightness just a bit
+    s->set_saturation(s, -2);  // lower the saturation
+  }
+  // drop down frame size for higher initial frame rate
+  if (config.pixel_format == PIXFORMAT_JPEG) {
+    s->set_framesize(s, FRAMESIZE_QVGA);
+  }
+
+#if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
+  s->set_vflip(s, 1);
+  s->set_hmirror(s, 1);
+#endif
+
+#if defined(CAMERA_MODEL_ESP32S3_EYE)
+  s->set_vflip(s, 1);
+#endif
+
+// Setup LED FLash if LED pin is defined in camera_pins.h
+#if defined(LED_GPIO_NUM)
+  setupLedFlash();
+#endif
+
+  WiFi.begin(ssid, password);
+  WiFi.setSleep(false);
+
+  Serial.print("WiFi connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+
+  // startCameraServer();
+
+  Serial.print("Camera Ready! Use 'http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("' to connect");
+}
+
+void loop() {
+  // WiFiClient client;
+  // if (!client.connect(host, port)) {
+  //   Serial.println("Connection to host failed");
+  //   delay(1000);
+  //   return;
+  // }
+  // put your main code here, to run repeatedly:
+  // 사진 캡처
+  camera_fb_t *fb = esp_camera_fb_get();
+  if (!fb) {
+    Serial.println("Camera capture failed");
+    return;
+  }
+
+  // JSON 시작
+
+
+  TJpgDec.drawJpg(0, 0, fb->buf, fb->len);
+
+  Serial.println("test");
+  // 메모리 반환
+  esp_camera_fb_return(fb);
+
+  delay(1000);
 }
