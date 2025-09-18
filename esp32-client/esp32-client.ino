@@ -12,10 +12,10 @@
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-String ssid = "Hotspot7028";
-String password = "0622661079";
-// String ssid = "SK_WiFiGIGACBDC";
-// String password = "1903048634";
+// String ssid = "Hotspot7028";
+// String password = "0622661079";
+String ssid = "SK_WiFiGIGACBDC";
+String password = "1903048634";
 const uint16_t port = 10032;
 const char *host = "192.168.35.189";
 WiFiClient client;
@@ -26,17 +26,17 @@ void setupLedFlash();
 bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
   // (x,y)~(x+w,y+h) 블록 단위 픽셀이 bitmap으로 들어옴
   // 여기서 특정 좌표의 RGB565 값을 추출 가능
-  Serial.printf("%d %d %d %d",x,y,w,h);
+  // Serial.printf("%d %d %d %d", x, y, w, h);
   for (int j = 0; j < 1; j++) {
     for (int i = 0; i < 1; i++) {
       uint16_t color = bitmap[j * w + i];
       uint8_t r = ((color >> 11) & 0x1F) << 3;
       uint8_t g = ((color >> 5) & 0x3F) << 2;
       uint8_t b = (color & 0x1F) << 3;
-      Serial.printf("(%d, %d, %d)", r, g, b);
+      // Serial.printf("(%d, %d, %d)", r, g, b);
     }
   }
-  Serial.println();
+  // Serial.println();
 
   return true;  // 계속 디코딩
 }
@@ -68,11 +68,12 @@ void setup() {
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_UXGA;
   config.pixel_format = PIXFORMAT_JPEG;  // for streaming
-  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  // config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
   config.fb_count = 1;
+
 
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   //                      for larger pre-allocated frame buffer.
@@ -166,8 +167,7 @@ void loop() {
   }
 
   // JSON 시작
-
-
+  // Serial.printf("%d %d\n", fb->width, fb->height);
   TJpgDec.drawJpg(0, 0, fb->buf, fb->len);
 
   Serial.println("test");
