@@ -3,7 +3,6 @@
 #include "esp_camera.h"
 #include <WiFi.h>
 #include <ArduinoJson.h>
-#include <base64.hpp>
 
 // ===========================
 // Select camera model in board_config.h
@@ -20,7 +19,6 @@ String password = "0622661079";
 const uint16_t port = 10032;
 const char *host = "192.168.35.189";
 WiFiClient client;
-char encoded[CHUNK_SIZE];
 void startCameraServer();
 void setupLedFlash();
 
@@ -28,6 +26,7 @@ void setupLedFlash();
 bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
   // (x,y)~(x+w,y+h) 블록 단위 픽셀이 bitmap으로 들어옴
   // 여기서 특정 좌표의 RGB565 값을 추출 가능
+  Serial.printf("%d %d %d %d",x,y,w,h);
   for (int j = 0; j < 1; j++) {
     for (int i = 0; i < 1; i++) {
       uint16_t color = bitmap[j * w + i];
