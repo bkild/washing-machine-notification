@@ -1,7 +1,10 @@
+#include <TJpg_Decoder.h>
+
 #include "esp_camera.h"
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include <base64.hpp>
+
 // ===========================
 // Select camera model in board_config.h
 // ===========================
@@ -10,10 +13,10 @@
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-// String ssid = "Hotspot7028";
-// String password = "0622661079";
-String ssid = "SK_WiFiGIGACBDC";
-String password = "1903048634";
+String ssid = "Hotspot7028";
+String password = "0622661079";
+// String ssid = "SK_WiFiGIGACBDC";
+// String password = "1903048634";
 const uint16_t port = 10032;
 const char *host = "192.168.35.189";
 WiFiClient client;
@@ -21,11 +24,29 @@ char encoded[CHUNK_SIZE];
 void startCameraServer();
 void setupLedFlash();
 
+// JPEG 메모리 버퍼에서 디코딩 (전체 변환 아님)
+bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
+  // (x,y)~(x+w,y+h) 블록 단위 픽셀이 bitmap으로 들어옴
+  // 여기서 특정 좌표의 RGB565 값을 추출 가능
+  for (int j = 0; j < 1; j++) {
+    for (int i = 0; i < 1; i++) {
+      uint16_t color = bitmap[j * w + i];
+      uint8_t r = ((color >> 11) & 0x1F) << 3;
+      uint8_t g = ((color >> 5) & 0x3F) << 2;
+      uint8_t b = (color & 0x1F) << 3;
+      Serial.printf("(%d, %d, %d)", r, g, b);
+    }
+  }
+  Serial.println();
+
+  return true;  // 계속 디코딩
+}
 void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
-
+  TJpgDec.setJpgScale(1);
+  TJpgDec.setCallback(tjpg_output);
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -131,12 +152,12 @@ void setup() {
 }
 
 void loop() {
-  WiFiClient client;
-  if (!client.connect(host, port)) {
-    Serial.println("Connection to host failed");
-    delay(1000);
-    return;
-  }
+  // WiFiClient client;
+  // if (!client.connect(host, port)) {
+  //   Serial.println("Connection to host failed");
+  //   delay(1000);
+  //   return;
+  // }
   // put your main code here, to run repeatedly:
   // 사진 캡처
   camera_fb_t *fb = esp_camera_fb_get();
@@ -147,10 +168,12 @@ void loop() {
 
   // JSON 시작
 
-  client.printf("{\"command\":\"capture\",\"size\":\"%d\"}", fb->len);
-  client.write(fb->buf, fb->len);
+
+  TJpgDec.drawJpg(0, 0, fb->buf, fb->len);
+
+  Serial.println("test");
   // 메모리 반환
   esp_camera_fb_return(fb);
 
-  delay(5000);
+  delay(1000);
 }
