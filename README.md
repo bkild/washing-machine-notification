@@ -47,8 +47,6 @@
 
 - 모든 전송 데이터는 JSON 포맷을 사용하며, 전송데이터는 모두 문자열(String) 타입으로  통일한다.
 - ESP32는 Arduino IDE를 활용하여 C/C++ 기반으로 개발한다.
-- ESP32 JSON parsing은 ArduinoJson by Benoit Blanchon 7.4.2을 사용한다
-- TJpg_Decoder by Bodmer 1.1.0을 사용한다
 - 추가 장치가 연결될 경우, 해당 장치에 지원하는 언어 및 IDE를 동일한 방식으로 기술한다.
 
 #### 상세문서
@@ -82,3 +80,10 @@ Jpeg는 촬영이 가능 하지만 압축이미지라 사용할려면 디코딩�
 #### wifi접속 비밀번호 및 ip정보가 걸림 github에 public으로 올리는건데
 비밀번호부분 github에 public으로 올라가는게 걸림
 .gitignore 비밀번호 따로 관리
+
+## 프로젝트 폴더 구조
+
+## 사용한 라이브러리 버전
+
+- ESP32 : ArduinoJson by Benoit Blanchon 7.4.2
+- ESP32 : TJpg_Decoder by Bodmer 1.1.0
