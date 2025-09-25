@@ -35,27 +35,19 @@ bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap)
       }
       int px = seg_pixel_pos[k][idx][0];
       int py = seg_pixel_pos[k][idx][1];
-      if (x <= px && px < x + w && y <= py && py < y + h) {
-        uint16_t color = bitmap[py * w + px];
+      int local_x = px - x;
+      int local_y = py - y;
+      if (0 <= local_x && local_x < w && 0 <= local_y && local_y < h) {
+        uint16_t color = bitmap[local_y * w + local_x];
         uint8_t r = ((color >> 11) & 0x1F) << 3;
         uint8_t g = ((color >> 5) & 0x3F) << 2;
         uint8_t b = (color & 0x1F) << 3;
         segment_led_state[k][idx] = abs(r - TARGET_R) <= 40 && abs(g - TARGET_G) <= 40 && abs(b - TARGET_B) <= 40;
         Serial.printf("%d %d %d\n", abs(r - TARGET_R), abs(g - TARGET_G), abs(b - TARGET_B));
-        Serial.printf("%d %d %d\n\n", r,g,b);
+        Serial.printf("%d %d %d\n\n", r, g, b);
       }
     }
   }
-  for (int j = 0; j < 1; j++) {
-    for (int i = 0; i < 1; i++) {
-      uint16_t color = bitmap[j * w + i];
-      uint8_t r = ((color >> 11) & 0x1F) << 3;
-      uint8_t g = ((color >> 5) & 0x3F) << 2;
-      uint8_t b = (color & 0x1F) << 3;
-      // Serial.printf("(%d, %d, %d)", r, g, b);
-    }
-  }
-  // Serial.println();
 
   return true;  // 계속 디코딩
 }
