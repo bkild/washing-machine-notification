@@ -7,11 +7,17 @@
 // JPEG 메모리 버퍼에서 디코딩 (전체 변환 아님)
 int off_led_power = 0;
 int segment_led_power[4][8];
+int segment_led_cnt[4][8];
 bool segment_led_state[4][8];
-int len_led_area = 3;
+int len_led_area = 1;
 int ret_array[4];
+
 bool calc_cross_area(int x, int y, int w, int h, int x2, int y2, int w2, int h2) {
-  if (x2 == -1 || y2 == -1) {
+  x2-=w2;
+  y2-=h2;
+  w2=2*w2+1;
+  h2=2*h2+1;
+  if (x2 < 0 || y2 < 0) {
     return false;
   }
   if (x2 + w2 - 1 < x || x + w - 1 < x2 || y2 + h2 - 1 < y || y + w - 1 < y2) {
@@ -43,14 +49,10 @@ bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap)
   // (x,y)~(x+w,y+h) 블록 단위 픽셀이 bitmap으로 들어옴
   // 여기서 특정 좌표의 RGB565 값을 추출 가능
   // Serial.printf("%d %d %d %d", x, y, w, h);
-  int sx_off_led = off_led_pos[0];
-  int sy_off_led = off_led_pos[1];
-  int ex_off_led = off_led_pos[0] + len_led_area;
-  int ey_off_led = off_led_pos[1] + len_led_area;
   if (calc_cross_area(x, y, w, h, off_led_pos[0], off_led_pos[1], len_led_area, len_led_area)) {
     for (int cur_x = ret_array[0]; cur_x <= ret_array[2]; cur_x++) {
       for (int cur_y = ret_array[1]; cur_y <= ret_array[3]; cur_y++) {
-        uint16_t color = bitmap[cur_x * w + cur_y];
+        uint16_t color = bitmap[cur_y * w + cur_x];
         uint8_t r = ((color >> 11) & 0x1F) << 3;
         uint8_t g = ((color >> 5) & 0x3F) << 2;
         uint8_t b = (color & 0x1F) << 3;
@@ -70,13 +72,14 @@ bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap)
       if (calc_cross_area(x, y, w, h, seg_pixel_pos[k][idx][0], seg_pixel_pos[k][idx][1], len_led_area, len_led_area)) {
         for (int cur_x = ret_array[0]; cur_x <= ret_array[2]; cur_x++) {
           for (int cur_y = ret_array[1]; cur_y <= ret_array[3]; cur_y++) {
-            uint16_t color = bitmap[cur_x * w + cur_y];
+            uint16_t color = bitmap[cur_y * w + cur_x];
             uint8_t r = ((color >> 11) & 0x1F) << 3;
             uint8_t g = ((color >> 5) & 0x3F) << 2;
             uint8_t b = (color & 0x1F) << 3;
             segment_led_power[k][idx] += r;
             segment_led_power[k][idx] += g;
             segment_led_power[k][idx] += b;
+            segment_led_cnt[k][idx]++;
           }
         }
       }
@@ -130,6 +133,11 @@ void setup() {
       Serial.print(" ");
     }
     Serial.print("\n");
+  }
+  for (int k = 0; k < 4; k++) {
+    for (int idx = 0; idx < 8; idx++) {
+      segment_led_state[k][idx]=segment_led_power[k][idx]>=2*off_led_power;
+    }
   }
   print7segment(segment_led_state[0]);
   print7segment(segment_led_state[1]);

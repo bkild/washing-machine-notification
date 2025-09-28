@@ -38,7 +38,7 @@ void seven_segment_idx_to_char_init() {
 #define TARGET_R 255
 #define TARGET_G 197
 #define TARGET_B 179
-int off_led_pos[2]={300,320};
+int off_led_pos[2]={315,320};
 int seg_pixel_pos[4][8][2]={
 	-1,-1,327,322,326,329,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 	334,318,338,322,336,330,332,333,329,330,331,321,333,326,-1,-1,
