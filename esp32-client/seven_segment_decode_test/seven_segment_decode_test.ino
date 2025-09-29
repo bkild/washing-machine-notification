@@ -20,7 +20,7 @@ bool calc_cross_area(int x, int y, int w, int h, int x2, int y2, int w2, int h2)
   if (x2 < 0 || y2 < 0) {
     return false;
   }
-  if (x2 + w2 - 1 < x || x + w - 1 < x2 || y2 + h2 - 1 < y || y + w - 1 < y2) {
+  if (x2 + w2 - 1 < x || x + w - 1 < x2 || y2 + h2 - 1 < y || y + h - 1 < y2) {
     return false;
   }
   ret_array[0] = x;
