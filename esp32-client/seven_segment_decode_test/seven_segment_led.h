@@ -18,11 +18,8 @@ extern int ret_array[4];
 
 bool calc_cross_area(int x, int y, int w, int h, int x2, int y2, int w2, int h2);
 bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap);
-struct STIME{
-  int hour;
-  int min;
-};
-STIME getTime(uint8_t *data,uint32_t size);
+
+int getTime(uint8_t *data,uint32_t size);
 void print7segment(char c);
 void print7segment(bool is_on[]);
 

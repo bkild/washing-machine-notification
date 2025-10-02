@@ -41,8 +41,13 @@ void setup() {
 
   Serial.printf("Read %u bytes into PSRAM\n", bytesRead);
 
-  auto t = getTime(data,fileSize);
+  auto t = getTime(data, fileSize);
+  if (t>=0) {
+    Serial.printf("%03d\n", t);
+  }else{
+    Serial.printf("Error\n");
 
+  }
   free(data);
 }
 

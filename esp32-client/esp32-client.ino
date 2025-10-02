@@ -1,9 +1,11 @@
-#include <TJpg_Decoder.h>
+#include <ArduinoJson.h>
+#include <ArduinoJson.hpp>
 
 #include "esp_camera.h"
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include "seven_segment_led.h"
+
 // ===========================
 // Select camera model in board_config.h
 // ===========================
@@ -22,43 +24,13 @@ WiFiClient client;
 void startCameraServer();
 void setupLedFlash();
 
-// JPEG 메모리 버퍼에서 디코딩 (전체 변환 아님)
-bool segment_led_state[4][8];
-bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
-  // (x,y)~(x+w,y+h) 블록 단위 픽셀이 bitmap으로 들어옴
-  // 여기서 특정 좌표의 RGB565 값을 추출 가능
-  // Serial.printf("%d %d %d %d", x, y, w, h);
-  for (int k = 0; k < 4; k++) {
-    for (int idx = 0; idx < 8; idx++) {
-      if (k == 0 && idx != 1 && idx != 2) {
-        continue;
-      }
-      int px = seg_pixel_pos[k][idx][0];
-      int py = seg_pixel_pos[k][idx][1];
-      int local_x = px - x;
-      int local_y = py - y;
-      if (0 <= local_x && local_x < w && 0 <= local_y && local_y < h) {
-        uint16_t color = bitmap[local_y * w + local_x];
-        uint8_t r = ((color >> 11) & 0x1F) << 3;
-        uint8_t g = ((color >> 5) & 0x3F) << 2;
-        uint8_t b = (color & 0x1F) << 3;
-        segment_led_state[k][idx] = abs(r - TARGET_R) <= 40 && abs(g - TARGET_G) <= 40 && abs(b - TARGET_B) <= 40;
-        Serial.printf("%d %d %d\n", abs(r - TARGET_R), abs(g - TARGET_G), abs(b - TARGET_B));
-        Serial.printf("%d %d %d\n\n", r, g, b);
-      }
-    }
-  }
 
-  return true;  // 계속 디코딩
-}
 void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
-  seven_segment_idx_to_char_init();
+  seven_segment_init();
 
-  TJpgDec.setJpgScale(1);
-  TJpgDec.setCallback(tjpg_output);
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -179,15 +151,17 @@ void loop() {
     return;
   }
 
-  // JSON 시작
-  Serial.printf("%d %d\n", fb->width, fb->height);
-  memset(segment_led_state, 0, sizeof(segment_led_state));
-  TJpgDec.drawJpg(0, 0, fb->buf, fb->len);
 
-  print7segment(segment_led_state[0]);
-  print7segment(segment_led_state[1]);
-  print7segment(segment_led_state[2]);
-  print7segment(segment_led_state[3]);
+  // 이미지에서 시간 추출
+  Serial.printf("%d %d\n", fb->width, fb->height);
+  auto t = getTime(data, fileSize);
+  if (t>=0) {
+    Serial.printf("%03d\n", t);
+  }else{
+    Serial.printf("Error\n");
+
+  }
+  // JSON 시작
 
   // 메모리 반환
   esp_camera_fb_return(fb);
