@@ -10,7 +10,6 @@ Sameple md파일
   "status": "running",    // running, completed, idle
   "time_left": 25,        // 남은 세탁 시간 (분 단위)
   "alert": false,         // 세탁 완료 알림 여부
-  "timestamp": "2025-09-16T11:23:45Z"
 }
 ```
 2. 서버 → 클라이언트 (세탁 상태 브로드캐스트)
@@ -31,6 +30,5 @@ json
 {
   "device_id": "client_mobile_01",
   "action": "stop_alert",
-  "timestamp": "2025-09-16T11:24:12Z"
 }
 ```
