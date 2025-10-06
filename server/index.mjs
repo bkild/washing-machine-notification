@@ -31,8 +31,8 @@ const esp32TcpSocketServer = net.createServer((socket) => {
       // console.log(data);
       // 2) 본문이 다 왔는지 확인
       if (buffer.length < expectedLength) break;
-      const jsonStr = buffer.slice(0, expectedLength).toString();
-      buffer = buffer.slice(expectedLength);
+      const jsonStr = buffer.subarray(0, expectedLength).toString();
+      buffer = buffer.subarray(expectedLength);
       expectedLength = null;
 
       try {
@@ -42,7 +42,11 @@ const esp32TcpSocketServer = net.createServer((socket) => {
         console.error("JSON 파싱 실패:", jsonStr);
       }
     }
-
+    socket.on("close", () => {
+      console.log("클라이언트 연결 종료");
+      buffer = null;
+      expectedLength = null;
+    });
     //로그 저장기능
     // const dataObj = JSON.parse(data.toString);
 
