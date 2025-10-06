@@ -52,13 +52,6 @@ const esp32TcpSocketServer = net.createServer((socket) => {
     // });
   });
 });
-function readByte() {
-  if (readPos >= buffer.length) return null;
-  const byte = buffer[readPos];
-  readPos++;
-
-  return byte;
-}
 const tcpSocketServer = net.createServer((socket) => {
   console.log("TCP Socket client connected");
 
