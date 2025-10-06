@@ -7,7 +7,6 @@ const WEB_SOCKET_PORT = 11000;
 let esp32Socket = null;
 let tcpSocketClients = [];
 
-
 const esp32TcpSocketServer = net.createServer((socket) => {
   console.log("TCP Socket client connected");
 
@@ -15,8 +14,8 @@ const esp32TcpSocketServer = net.createServer((socket) => {
   esp32Socket = socket;
 
   //소켓이 작동중일때 메시지를 받은 경우
-let buffer = Buffer.alloc(0);
-let expectedLength = null;
+  let buffer = Buffer.alloc(0);
+  let expectedLength = null;
   socket.on("data", (data) => {
     // 아직 안 읽은 데이터가 buffer에 남아있음
     buffer = Buffer.concat([buffer, data]);
