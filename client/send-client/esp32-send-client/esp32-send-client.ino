@@ -21,8 +21,6 @@ String password = "1903048634";
 const uint16_t port = 10032;
 const char *host = "192.168.35.189";
 WiFiClient client;
-void startCameraServer();
-void setupLedFlash();
 
 
 void setup() {
@@ -137,12 +135,12 @@ void setup() {
 }
 
 void loop() {
-  // WiFiClient client;
-  // if (!client.connect(host, port)) {
-  //   Serial.println("Connection to host failed");
-  //   delay(1000);
-  //   return;
-  // }
+  WiFiClient client;
+  if (!client.connect(host, port)) {
+    Serial.println("Connection to host failed");
+    delay(1000);
+    return;
+  }
   // put your main code here, to run repeatedly:
   // 사진 캡처
   camera_fb_t *fb = esp_camera_fb_get();
