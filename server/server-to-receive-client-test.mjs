@@ -22,7 +22,7 @@ const tcpSocketServer = net.createServer((socket) => {
         data: {
           status: "running",
           time_left: cnt.toString(),
-          alert: "false",
+          alert: "0",
         },
       };
     } else {
@@ -31,7 +31,7 @@ const tcpSocketServer = net.createServer((socket) => {
         data: {
           status: "completed",
           time_left: "0",
-          alert: "true",
+          alert: "1",
         },
       };
     }

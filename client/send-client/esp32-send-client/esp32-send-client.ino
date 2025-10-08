@@ -1,9 +1,10 @@
-#include <ArduinoJson.h>
-#include <ArduinoJson.hpp>
-
 #include "esp_camera.h"
+#include <ArduinoJson.h>
+
+
 #include <WiFi.h>
 #include <ArduinoJson.h>
+
 #include "seven_segment_led.h"
 
 // ===========================
@@ -22,6 +23,8 @@ const uint16_t port = 10032;
 const char *host = "192.168.35.189";
 WiFiClient client;
 
+void startCameraServer();
+void setupLedFlash();
 
 void setup() {
   Serial.begin(115200);
@@ -111,10 +114,10 @@ void setup() {
   s->set_vflip(s, 1);
 #endif
 
-// Setup LED FLash if LED pin is defined in camera_pins.h
-#if defined(LED_GPIO_NUM)
-  setupLedFlash();
-#endif
+  // Setup LED FLash if LED pin is defined in camera_pins.h
+  // #if defined(LED_GPIO_NUM)
+  //   setupLedFlash();
+  // #endif
 
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
@@ -134,13 +137,21 @@ void setup() {
   Serial.println("' to connect");
 }
 
+String deviece_id = "esp32_washer_01";
+String status="idle";
+int time_left=8888;
+bool alert = false;
 void loop() {
-  WiFiClient client;
-  if (!client.connect(host, port)) {
-    Serial.println("Connection to host failed");
-    delay(1000);
-    return;
+  if (!client.connected()) {
+    if (!client.connect(host, port)) {
+      Serial.println("Connection to host failed");
+      delay(1000);
+      return;
+    } else {
+      Serial.println("Reconnected");
+    }
   }
+
   // put your main code here, to run repeatedly:
   // 사진 캡처
   camera_fb_t *fb = esp_camera_fb_get();
@@ -151,16 +162,43 @@ void loop() {
 
 
   // 이미지에서 시간 추출
-  Serial.printf("%d %d\n", fb->width, fb->height);
-  auto t = getTime(data, fileSize);
-  if (t>=0) {
+  // Serial.printf("%d %d\n", fb->width, fb->height);
+  int t = getTime(fb->buf, fb->len);
+  if (t >= 0) {
     Serial.printf("%03d\n", t);
-  }else{
+  } else {
     Serial.printf("Error\n");
-
   }
-  // JSON 시작
 
+  if (t >= 0) {
+    if (t == 0) {
+      status = "completed";
+      time_left = t;
+      alert = true;
+    } else {
+      status = "running";
+      time_left = t;
+      alert = false;
+    }
+  }
+
+  // JSON 시작
+  JsonDocument doc;
+  // Add values in the document
+  //데이터 전송은 무조건 문자열로 통일
+  doc["device_id"] = deviece_id;
+  doc["status"] = status;                // running, completed, idle
+  doc["time_left"] = String(time_left);  // 남은 세탁 시간 (분 단위)
+  doc["alert"] = String(alert);          // 세탁 완료 알림 여부
+
+  uint32_t length = measureJson(doc);
+  // 네트워크 바이트 오더로 변환 (Big Endian)
+  uint32_t length_net = htonl(length);
+
+  // 4바이트 길이 먼저 전송
+  client.write((uint8_t *)&length_net, sizeof(length_net));
+
+  serializeJson(doc, client);
   // 메모리 반환
   esp_camera_fb_return(fb);
 

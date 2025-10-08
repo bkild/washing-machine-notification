@@ -69,7 +69,7 @@ void loop() {
     if (doc.containsKey("type") && doc.containsKey("data")) {
       status = doc["data"]["status"].as<String>();
       time_left = doc["data"]["time_left"].as<int>();
-      alert = doc["data"]["alert"] == "true";
+      alert = doc["data"]["alert"].as<int>();
     }
 
     // 필요시 서버에 응답도 가능
@@ -86,7 +86,7 @@ void loop() {
   } else if (status == "error") {
     show_err();
   }
-  Serial.println(alert);
+  // Serial.println(alert);
   if (alert) {
     if (!melodyState.playing) {
       little_star_start();

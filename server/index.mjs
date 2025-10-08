@@ -52,7 +52,7 @@ const esp32TcpSocketServer = net.createServer((socket) => {
         });
         console.log("수신된 JSON:", obj);
       } catch (err) {
-        console.error("JSON 파싱 실패:", jsonStr);
+        console.error("JSON 파싱 실패:", receivedJsonStr);
       }
     }
 

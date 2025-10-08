@@ -8,6 +8,8 @@
 
 char seven_segment_idx_to_char[256];
 short char_to_seven_segment_idx[256];
+int digit_pin[] = { 18, 19, 22, 23 };
+int segment_pin[] = { 12, 13, 14, 25, 26, 27, 32, 33 };
 void seven_segment_init() {
 	TJpgDec.setJpgScale(1);
 	TJpgDec.setCallback(tjpg_output);
@@ -25,6 +27,10 @@ void seven_segment_init() {
 	seven_segment_idx_to_char[0b1111'1110] = '8';
 
 	seven_segment_idx_to_char[0b1111'0110] = '9';
+	seven_segment_idx_to_char[0b1001'1110] = 'E';
+	seven_segment_idx_to_char[0b0010'1010] = 'N';
+	seven_segment_idx_to_char[0b0111'1010] = 'D';
+	seven_segment_idx_to_char[0b0000'1010] = 'r';
 
 	char_to_seven_segment_idx['0'] = 0b1111'1100;
 	char_to_seven_segment_idx['1'] = 0b0110'0000;
@@ -39,6 +45,10 @@ void seven_segment_init() {
 	char_to_seven_segment_idx['8'] = 0b1111'1110;
 
 	char_to_seven_segment_idx['9'] = 0b1111'0110;
+	char_to_seven_segment_idx['E'] = 0b1001'1110;
+	char_to_seven_segment_idx['N'] = 0b0010'1010;
+	char_to_seven_segment_idx['D'] = 0b0111'1010;
+	char_to_seven_segment_idx['r'] = 0b0000'1010;
 
 	// _
 	//| |
@@ -81,12 +91,55 @@ void seven_segment_init() {
 	//  |
 	// 0b1111'0110
 }
-int off_led_pos[2] = { 315, 320 };
+void seven_segment_init(int out) {
+	seven_segment_init();
+	if (out) {
+		for (int i = 0; i < 8; i++) {
+			pinMode(segment_pin[i], OUTPUT);
+		}
+
+		for (int i = 0; i < 4; i++) {
+			pinMode(digit_pin[i], OUTPUT);
+		}
+	}
+}
+int off_led_pos[2] = { 200, 335 };
 int seg_pixel_pos[4][8][2] = {
-	-1, -1, 327, 322, 326, 329, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	334, 318, 338, 322, 336, 330, 332, 333, 329, 330, 331, 321, 333, 326, -1, -1,
-	349, 319, 353, 323, 351, 330, 347, 333, 345, 330, 345, 323, 348, 326, -1, -1,
-	359, 320, 363, 323, 361, 331, 357, 334, 354, 330, 355, 323, 358, 327, -1, -1
+	-1, -1,
+	236, 332,
+	246, 405,
+	-1, -1,
+	-1, -1,
+	-1, -1,
+	-1, -1,
+	-1, -1,
+
+	257, 285,
+	279, 311,
+	290, 388,
+	278, 430,
+	258, 399,
+	248, 328,
+	268, 355,
+	-1, -1,
+
+	341, 227,
+	375, 264,
+	393, 362,
+	372, 412,
+	337, 376,
+	322, 287,
+	357, 317,
+	-1, -1,
+
+	429, 166,
+	485, 203,
+	514, 332,
+	478, 399,
+	427, 351,
+	407, 242,
+	452, 281,
+	-1, -1
 };
 int off_led_power = 0;
 int segment_led_power[4][8];
@@ -175,12 +228,16 @@ bool tjpg_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap)
 uint8_t tm[4];
 int getTime(uint8_t *data, uint32_t fileSize) {
 	memset(segment_led_power, 0, sizeof(segment_led_power));
+	off_led_power = 0;
 	TJpgDec.drawJpg(0, 0, data, fileSize);
+	// Serial.println(off_led_power);
 
 	for (int k = 0; k < 4; k++) {
 		for (int idx = 0; idx < 8; idx++) {
-			segment_led_state[k][idx] = segment_led_power[k][idx] >= 2 * off_led_power;
+			// Serial.printf("%d ", segment_led_power[k][idx]);
+			segment_led_state[k][idx] = segment_led_power[k][idx] >= 1.5 * off_led_power;
 		}
+		// Serial.println();
 	}
 	for (int k = 0; k < 4; k++) {
 		int bit = 0;
@@ -190,21 +247,27 @@ int getTime(uint8_t *data, uint32_t fileSize) {
 		}
 		tm[k] = seven_segment_idx_to_char[bit];
 	}
-	//어떤게 error상태인가
-	//min은 에러가 없어야함
-	//hour는 뒤에서부터 채워져야함 그게 아니다? 에러
 	int min_val;
+	if (tm[1] == 'E' && tm[2] == 'N' && tm[3] == 'D') {
+		min_val = 0;
+		return min_val;
+	}
+	// Serial.println(tm[0]);
+	// Serial.println(tm[1]);
+	// Serial.println(tm[2]);
+	// Serial.println(tm[3]);
+
 	if (tm[0] != 0 && tm[1] != 0) {
-		min_val = ((tm[0] - '0') * 10 + (tm[1] - '0'))*60;
-	}else if(tm[0]==0&&tm[1]!=0){
-		min_val = (tm[1] - '0')*60;
-	}else{
+		min_val = ((tm[0] - '0') * 10 + (tm[1] - '0')) * 60;
+	} else if (tm[0] == 0 && tm[1] != 0) {
+		min_val = (tm[1] - '0') * 60;
+	} else {
 		min_val = 0;
 	}
 
-	if(tm[2]==0 || tm[3]==0){
+	if (tm[2] == 0 || tm[3] == 0) {
 		min_val = -1;
-	}else{
+	} else {
 		min_val += (tm[2] - '0') * 10 + (tm[3] - '0');
 	}
 	// print7segment(segment_led_state[0]);
@@ -234,4 +297,50 @@ void print7segment(bool is_on[]) {
 	Serial.printf(" %c \n", (is_on[0] ? '_' : ' '));
 	Serial.printf("%c%c%c\n", (is_on[5] ? '|' : ' '), (is_on[6] ? '_' : ' '), (is_on[1] ? '|' : ' '));
 	Serial.printf("%c%c%c %c\n", (is_on[4] ? '|' : ' '), (is_on[3] ? '_' : ' '), (is_on[2] ? '|' : ' '), (is_on[7] ? '.' : ' '));
+}
+void show_min(int min_val) {
+	for (int i = 3; i >= 0; i--) {
+		char c = min_val % 10 + '0';
+		show_char(i, c);
+		delay(5);
+		min_val /= 10;
+	}
+}
+void show_end() {
+	show_char(1, 'E');
+	delay(5);
+	show_char(2, 'N');
+	delay(5);
+	show_char(3, 'D');
+	delay(5);
+}
+void show_err() {
+	show_char(1, 'E');
+	delay(5);
+	show_char(2, 'r');
+	delay(5);
+	show_char(3, 'r');
+	delay(5);
+}
+void show_off() {
+	for (int i = 0; i < 4; i++) {
+		digitalWrite(digit_pin[i], HIGH);
+	}
+}
+void show_char(int pos, char c) {
+	for (int i = 0; i < 4; i++) {
+		if (i == pos) {
+			digitalWrite(digit_pin[i], LOW);
+		} else {
+			digitalWrite(digit_pin[i], HIGH);
+		}
+	}
+	for (int i = 0; i < 8; i++) {
+		byte segment_data = (char_to_seven_segment_idx[c] & (0x01 << i)) >> i;
+		if (segment_data == 1) {
+			digitalWrite(segment_pin[7 - i], HIGH);
+		} else {
+			digitalWrite(segment_pin[7 - i], LOW);
+		}
+	}
 }

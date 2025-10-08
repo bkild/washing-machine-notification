@@ -1,7 +1,7 @@
-#include <stdint.h>
 #ifndef SEVEN_SEGMENT_LED
 #define SEVEN_SEGMENT_LED
 #include <stdio.h>
+#include <stdint.h>
 extern char seven_segment_idx_to_char[256];
 extern short char_to_seven_segment_idx[256];
 extern int digit_pin[4];
