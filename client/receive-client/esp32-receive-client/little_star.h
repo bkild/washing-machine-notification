@@ -10,15 +10,15 @@ extern const int buzzerPin;
 
 // 음계 주파수 (Frequency) 정의
 // 중학교 음악 시간에 배우는 '도레미파솔라시'는 4옥타브입니다.
-#define NOTE_C4 262   // 도 (C)
-#define NOTE_D4 294   // 레 (D)
-#define NOTE_E4 330   // 미 (E)
-#define NOTE_F4 349   // 파 (F)
-#define NOTE_G4 392   // 솔 (G)
-#define NOTE_A4 440   // 라 (A)
-#define NOTE_B4 494   // 시 (B)
-#define NOTE_C5 523   // 높은 도 (High C)
-#define REST      0     // 쉼표 (Rest)
+#define NOTE_C4 262  // 도 (C)
+#define NOTE_D4 294  // 레 (D)
+#define NOTE_E4 330  // 미 (E)
+#define NOTE_F4 349  // 파 (F)
+#define NOTE_G4 392  // 솔 (G)
+#define NOTE_A4 440  // 라 (A)
+#define NOTE_B4 494  // 시 (B)
+#define NOTE_C5 523  // 높은 도 (High C)
+#define REST 0       // 쉼표 (Rest)
 
 // 멜로디 (음계 배열)
 // '반짝반짝 작은 별' 전체 곡입니다.
@@ -30,7 +30,17 @@ extern int melody[];
 extern int noteDurations[];
 
 // 템포 조정 (숫자가 작을수록 빨라짐)
-extern const int tempo; // 1분당 120박자의 일반적인 속도
+extern const int tempo;  // 1분당 120박자의 일반적인 속도
 void little_star_init();
 void little_star_play();
+struct MelodyState {
+  int index;
+  unsigned long noteStart;
+  int noteDuration;
+  bool playing;
+};
+extern MelodyState melodyState;
+void little_star_start();
+void little_star_update();
+
 #endif

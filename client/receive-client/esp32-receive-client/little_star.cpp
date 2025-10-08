@@ -66,3 +66,28 @@ void little_star_play(){
     noTone(buzzerPin);
   }
 }
+
+MelodyState melodyState;
+void little_star_start() {
+  melodyState.index = 0;
+  melodyState.playing = true;
+}
+
+void little_star_update() {
+  if (!melodyState.playing) return;
+
+  unsigned long now = millis();
+  if (melodyState.index < (sizeof(melody)/sizeof(int))) {
+    if (melodyState.noteStart == 0 || now - melodyState.noteStart >= melodyState.noteDuration) {
+      // 새로운 음 재생
+      int duration = 60000 / tempo / noteDurations[melodyState.index];
+      tone(buzzerPin, melody[melodyState.index], duration);
+      melodyState.noteDuration = duration * 1.30;
+      melodyState.noteStart = now;
+      melodyState.index++;
+    }
+  } else {
+    noTone(buzzerPin);
+    melodyState.playing = false;
+  }
+}

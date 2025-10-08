@@ -15,6 +15,7 @@ void setup() {
   WiFi.setSleep(false);
   seven_segment_init(1);
   little_star_init();
+  little_star_start();
   Serial.print("WiFi connecting");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -64,7 +65,7 @@ void loop() {
     if (doc.containsKey("type") && doc.containsKey("data")) {
       status = doc["data"]["status"].as<String>();
       time_left = doc["data"]["time_left"].as<int>();
-      alert = doc["data"]["alert"].as<bool>();
+      alert = doc["data"]["alert"] == "true";
     }
 
     // 필요시 서버에 응답도 가능
@@ -80,10 +81,12 @@ void loop() {
   } else if (status == "error") {
     show_err();
   }
-
+  Serial.println(alert);
   if (alert) {
-    Serial.println("alert");
-    little_star_play();
+    if (!melodyState.playing) {
+      little_star_start();
+    }
+    little_star_update();
   }
   show_off();
 }
