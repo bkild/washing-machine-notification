@@ -8,8 +8,8 @@ Sameple md파일
 {
   "device_id": "esp32_washer_01",
   "status": "running",    // running, completed, idle
-  "time_left": 25,        // 남은 세탁 시간 (분 단위)
-  "alert": false,         // 세탁 완료 알림 여부
+  "time_left": "25",        // 남은 세탁 시간 (분 단위)
+  "alert": "false",         // 세탁 완료 알림 여부
 }
 ```
 2. 서버 → 클라이언트 (세탁 상태 브로드캐스트)
@@ -20,8 +20,8 @@ json
   "type": "washer_status",
   "data": {
     "status": "completed",
-    "time_left": 0,
-    "alert": true
+    "time_left": "0",
+    "alert": "true",
   }
 }
 ```
