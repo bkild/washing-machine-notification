@@ -31,7 +31,7 @@ void setup() {
   Serial.println("Connected");
 }
 String status = "idle";
-int time_left = 0;
+int time_left = 8888;
 int alert = 0;
 void loop() {
   // put your main code here, to run repeatedly:
@@ -39,6 +39,10 @@ void loop() {
     Serial.println("Reconnecting...");
     if (client.connect(host, port)) {
       Serial.println("Reconnected");
+      status = "idle";
+      time_left = 8888;
+      alert = 0;
+      melodyState.playing=false;
     } else {
       delay(1000);
       return;
@@ -74,6 +78,7 @@ void loop() {
     // client.write((uint8_t *)&replyLenNet, 4);
     // client.write((const uint8_t *)reply.c_str(), reply.length());
   }
+  
   if (status == "running") {
     show_min(time_left);
   } else if (status == "completed") {
