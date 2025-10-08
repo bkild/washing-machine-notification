@@ -31,22 +31,31 @@ const esp32TcpSocketServer = net.createServer((socket) => {
       // console.log(data);
       // 2) 본문이 다 왔는지 확인
       if (buffer.length < expectedLength) break;
-      const jsonStr = buffer.subarray(0, expectedLength).toString();
+      const receivedJsonStr  = buffer.subarray(0, expectedLength).toString();
       buffer = buffer.subarray(expectedLength);
       expectedLength = null;
 
       try {
-        const obj = JSON.parse(jsonStr);
+        const obj = JSON.parse(receivedJsonStr );
+        const newObj = {
+          type: "washer_status",
+          data: obj,
+        };
+        const jsonStr = JSON.stringify(newObj);
+        const length = Buffer.byteLength(jsonStr);
+        const header = Buffer.alloc(4);
+        header.writeUInt32BE(length, 0);
+        const sendData = Buffer.concat([header, Buffer.from(jsonStr)]);
+
+        tcpSocketClients.forEach((tcpSocketClient) => {
+          tcpSocketClient.write(sendData);
+        });
         console.log("수신된 JSON:", obj);
       } catch (err) {
         console.error("JSON 파싱 실패:", jsonStr);
       }
     }
-    socket.on("close", () => {
-      console.log("클라이언트 연결 종료");
-      buffer = null;
-      expectedLength = null;
-    });
+
     //로그 저장기능
     // const dataObj = JSON.parse(data.toString);
 
@@ -54,6 +63,11 @@ const esp32TcpSocketServer = net.createServer((socket) => {
     // tcpSocketClients.forEach((tcpSocketClient) => {
     //   tcpSocketClient.write(data);
     // });
+  });
+  socket.on("close", () => {
+    console.log("클라이언트 연결 종료");
+    buffer = null;
+    expectedLength = null;
   });
 });
 const tcpSocketServer = net.createServer((socket) => {
