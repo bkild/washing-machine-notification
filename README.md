@@ -51,7 +51,7 @@
 
 #### 상세문서
 [JSON_SPEC](./docs/json_spec.md), [DB_SCHEMA](./docs/db_schema.md)
-## 구현 영상  
+## 구현 영상(프로토타입)  
 https://github.com/user-attachments/assets/1844289f-b448-4303-a4e8-cd438807bb9d  
 
 ## 성능 테스트
