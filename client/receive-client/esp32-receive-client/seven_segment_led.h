@@ -27,5 +27,6 @@ void print7segment(bool is_on[]);
 void show_min(int min_val);
 void show_end();
 void show_err();
+void show_off();
 void show_char(int pos, char c);
 #endif
