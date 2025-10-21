@@ -1,3 +1,4 @@
+#include "config.h"
 #include "esp_camera.h"
 #include <ArduinoJson.h>
 
@@ -11,16 +12,10 @@
 // Select camera model in board_config.h
 // ===========================
 #include "board_config.h"
-#define CHUNK_SIZE 128
-// ===========================
-// Enter your WiFi credentials
-// ===========================
-// String ssid = "Hotspot7028";
-// String password = "0622661079";
-String ssid = "SK_WiFiGIGACBDC";
-String password = "1903048634";
-const uint16_t port = 10032;
-const char *host = "192.168.35.189";
+String ssid = WIFI_SSID;
+String password = WIFI_PASSWORD;
+const char *host = SERVER_IP;
+const uint16_t port = SERVER_PORT;
 WiFiClient client;
 
 void startCameraServer();

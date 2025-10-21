@@ -1,11 +1,12 @@
+#include "config.h"
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include "seven_segment_led.h"
 #include "little_star.h"
-String ssid = "SK_WiFiGIGACBDC";
-String password = "1903048634";
-const uint16_t port = 10000;
-const char *host = "192.168.35.189";
+String ssid = WIFI_SSID;
+String password = WIFI_PASSWORD;
+const char *host = SERVER_IP;
+const uint16_t port = SERVER_PORT;
 
 WiFiClient client;
 void setup() {
